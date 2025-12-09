@@ -1,7 +1,7 @@
 # S3 Landing Zone bucket
 resource "aws_s3_bucket" "landing_zone" {
   bucket = "gamboge-etl-landing-zone" 
-  force_destroy = True
+  force_destroy = true
 
   tags = {
     Name = "etl-landing-zone"
