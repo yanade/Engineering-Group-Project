@@ -1,6 +1,6 @@
 
 resource "aws_iam_role" "lambda_exec" {
-  name = "gamboge-etl-lambda-exec-role"
+  name = "${var.project_name}-lambda-exec-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -23,7 +23,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 
 resource "aws_lambda_function" "etl_ingestion" {
-  function_name = "gamboge-etl-ingestion-lambda"
+  function_name = "${var.project_name}-ingestion-lambda"
   role          = aws_iam_role.lambda_exec.arn
   runtime       = "python3.12"
   handler       = "etl_handler.handler"
@@ -40,8 +40,32 @@ resource "aws_lambda_function" "etl_ingestion" {
   }
 
   tags = {
-    Name = "gamboge-etl-ingestion-lambda"
+    Name = "${var.project_name}-ingestion-lambda"
   }
 }
 
 
+# S3 LANDING ZONE PERMISSION POLICY 
+
+resource "aws_iam_role_policy" "lambda_s3_access" {
+  name = "${var.project_name}-lambda-s3-access"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.landing_zone.arn,
+          "${aws_s3_bucket.landing_zone.arn}/*"
+        ]
+      }
+    ]
+  })
+}
