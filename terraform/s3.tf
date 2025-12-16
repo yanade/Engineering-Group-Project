@@ -41,3 +41,48 @@ resource "aws_s3_bucket_public_access_block" "landing_zone" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+
+#--------------------------------
+# PROCESSED ZONE BUCKET 
+#--------------------------------
+
+resource "random_id" "processed_bucket_suffix" {
+  byte_length = 4
+}
+
+resource "aws_s3_bucket" "processed_zone" {
+  bucket = "${var.project_name}-processed-${var.environment}-${random_id.processed_bucket_suffix.hex}"
+  force_destroy = true
+  
+  tags = {
+    Name        = "processed-zone"
+    Environment = var.environment
+    Stage       = "Week2-Transformation"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "processed_zone" {
+  bucket = aws_s3_bucket.processed_zone.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "processed_zone" {
+  bucket = aws_s3_bucket.processed_zone.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "processed_zone" {
+  bucket = aws_s3_bucket.processed_zone.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
