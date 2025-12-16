@@ -6,6 +6,7 @@ resource "random_id" "bucket_suffix" {
 # LANDING ZONE BUCKET ONLY (Week 1)
 resource "aws_s3_bucket" "landing_zone" {
   bucket = "gamboge-landing-${var.environment}-${random_id.bucket_suffix.hex}"
+  force_destroy = true 
   
   tags = {
     Name        = "landing-zone"
@@ -31,7 +32,6 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "landing_zone" {
     }
   }
 }
-
 # Block public access
 resource "aws_s3_bucket_public_access_block" "landing_zone" {
   bucket = aws_s3_bucket.landing_zone.id
