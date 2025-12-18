@@ -271,10 +271,9 @@ class TransformService:
         fact.insert(0, "purchase_record_id", range(1, len(fact) + 1))
 
         return fact
-
-    # -------------------------
+    
     # Orchestration
-    # -------------------------
+
     def run(self):
         logger.info("Starting transformation run")
 
