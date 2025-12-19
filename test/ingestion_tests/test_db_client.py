@@ -9,21 +9,22 @@ def test_db_client_initialises_correctly(mocker):
     mock_env = {
         "DB_HOST": "localhost",
         "DB_NAME": "testdb",
-        "DB_USER": "user",
-        "DB_PASSWORD": "pass",
+        "DB_USER": "username",
+        "DB_PASSWORD": "password",
         "DB_PORT": "5432",
     }
     mocker.patch.dict(os.environ, mock_env)
 
     # Mock the Connection object ***in the db_client module***
     fake_connection = mocker.Mock()
-    mocker.patch("src.ingestion.db_client.Connection", return_value=fake_connection)
+    mocker.patch("ingestion.db_client.Connection", return_value=fake_connection)
 
     client = DatabaseClient()
 
     assert client.host == "localhost"
     assert client.database == "testdb"
-    assert client.user == "user"
+    assert client.user == "username"
+    assert client.password == "password"
     assert client.port == 5432
     assert client.conn == fake_connection
 
@@ -53,7 +54,7 @@ def test_run_executes_sql_and_returns_dict_rows(mocker):
     fake_conn.run.return_value = [(1, "Aaron")]
     fake_conn.columns = [{"name": "id"}, {"name": "name"}]
 
-    mocker.patch("src.ingestion.db_client.Connection", return_value=fake_conn)
+    mocker.patch("ingestion.db_client.Connection", return_value=fake_conn)
 
     client = DatabaseClient()
 
@@ -79,7 +80,7 @@ def test_fetch_preview_calls_run_with_limit(mocker):
     fake_conn.run.return_value = []
     fake_conn.columns = []
 
-    mocker.patch("src.ingestion.db_client.Connection", return_value=fake_conn)
+    mocker.patch("ingestion.db_client.Connection", return_value=fake_conn)
 
     client = DatabaseClient()
 
@@ -105,7 +106,7 @@ def test_close_calls_connection_close(mocker):
     )
 
     fake_conn = mocker.Mock()
-    mocker.patch("src.ingestion.db_client.Connection", return_value=fake_conn)
+    mocker.patch("ingestion.db_client.Connection", return_value=fake_conn)
 
     client = DatabaseClient()
     client.close()
