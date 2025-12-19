@@ -2,7 +2,7 @@ import pandas as pd
 
 from typing import Dict
 import logging
-from s3_client import S3TransformationClient
+from transformation.s3_client import S3TransformationClient
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 

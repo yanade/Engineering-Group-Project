@@ -8,7 +8,7 @@ def test_lambda_handler(mocker):
 
     mocker.patch("os.getenv", return_value="test_bucket")
 
-    mock_service = mocker.patch("src.ingestion.lambda_handler.IngestionService")
+    mock_service = mocker.patch("ingestion.lambda_handler.IngestionService")
 
     fake_service = mock_service.return_value
     fake_service.ingest_all_tables.return_value = {

@@ -6,8 +6,8 @@ import pytest
 
 def test_ingestion_service_initialises(mocker):
 
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mock_s3 = mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mock_s3 = mocker.patch("ingestion.ingest_service.S3Client")
 
     service = IngestionService(bucket="test-bucket")
 
@@ -17,8 +17,8 @@ def test_ingestion_service_initialises(mocker):
 
 
 def test_ingest_table_preview_success(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mock_s3 = mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mock_s3 = mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     fake_s3_instance = mock_s3.return_value
     # Fake DB result (still valid for refactor)
@@ -54,8 +54,8 @@ def test_ingest_table_preview_success(mocker):
 
 
 def test_ingest_table_preview_handles_error(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     fake_db_instance.fetch_preview.side_effect = Exception("DB failed!")
     service = IngestionService("bucket")
@@ -65,8 +65,8 @@ def test_ingest_table_preview_handles_error(mocker):
 
 
 def test_close_calls_db_close(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     service = IngestionService("bucket")
     service.close()
@@ -74,8 +74,8 @@ def test_close_calls_db_close(mocker):
 
 
 def test_ingest_table_changes_success_updates_checkpoint(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mock_s3 = mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mock_s3 = mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     fake_s3_instance = mock_s3.return_value
     fake_s3_instance.get_checkpoint.return_value = "2025-01-01T00:00:00+00:00"
@@ -104,8 +104,8 @@ def test_ingest_table_changes_success_updates_checkpoint(mocker):
 
 
 def test_ingest_table_changes_no_changes_skips_upload(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mock_s3 = mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mock_s3 = mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     fake_s3_instance = mock_s3.return_value
     fake_s3_instance.get_checkpoint.return_value = "2025-01-01T00:00:00+00:00"
@@ -124,8 +124,8 @@ def test_ingest_table_changes_no_changes_skips_upload(mocker):
 
 
 def test_ingest_table_changes_no_timestamp_column_checkpoint_none(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mock_s3 = mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mock_s3 = mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     fake_s3_instance = mock_s3.return_value
     fake_s3_instance.get_checkpoint.return_value = None
@@ -142,8 +142,8 @@ def test_ingest_table_changes_no_timestamp_column_checkpoint_none(mocker):
 
 
 def test_ingest_table_changes_handles_error(mocker):
-    mock_db = mocker.patch("src.ingestion.ingest_service.DatabaseClient")
-    mocker.patch("src.ingestion.ingest_service.S3Client")
+    mock_db = mocker.patch("ingestion.ingest_service.DatabaseClient")
+    mocker.patch("ingestion.ingest_service.S3Client")
     fake_db_instance = mock_db.return_value
     fake_db_instance.fetch_changes.side_effect = Exception("DB failed!")
     service = IngestionService(bucket="test-bucket")

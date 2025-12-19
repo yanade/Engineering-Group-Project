@@ -52,7 +52,7 @@ def test_write_json_key_format(mocker):
 
             return datetime(2025, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
-    mocker.patch("src.ingestion.s3_client.datetime", FakeDatetime)
+    mocker.patch("ingestion.s3_client.datetime", FakeDatetime)
 
     mocker.patch.object(client.s3, "put_object")
 

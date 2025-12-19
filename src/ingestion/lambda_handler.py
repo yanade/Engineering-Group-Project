@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from ingest_service import IngestionService
+from ingestion.ingest_service import IngestionService
 
 
 logger = logging.getLogger()
