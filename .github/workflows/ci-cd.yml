@@ -44,8 +44,7 @@ jobs:
           run: |
               black src/ingestion/ --check
               black --check .
-
-
+              
         - name: Install linting and security tools
           run: |
               pip install flake8 bandit pip-audit
