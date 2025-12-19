@@ -5,7 +5,6 @@ import os
 import logging
 import boto3
 import json
-import sys
 
 
 logger = logging.getLogger()
