@@ -215,3 +215,4 @@ class DatabaseClient:
             logger.info("Database connection closed.")
         except Exception as e:
             logger.warning(f"Failed to close database connection cleanly: {e}")
+
