@@ -3,7 +3,7 @@
 # Package Transform Lambda source code
 data "archive_file" "transform_lambda" {
   type        = "zip"
-  source_dir  = "${path.module}/../src/transformation"
+  source_dir  = "${path.module}/../src"
   output_path = "${path.module}/../transform_lambda.zip"
 
   excludes = [
@@ -26,7 +26,7 @@ resource "aws_lambda_function" "transform" {
   runtime       = var.lambda_runtime
 
   # this handler in ../src/transformation/lambda_handler.py
-  handler = "lambda_handler.lambda_handler"
+  handler = "transformation.lambda_handler.lambda_handler"
 
   filename         = data.archive_file.transform_lambda.output_path
   source_code_hash = data.archive_file.transform_lambda.output_base64sha256
