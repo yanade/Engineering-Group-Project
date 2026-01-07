@@ -1,3 +1,4 @@
+
 import pandas as pd
 
 from typing import Dict
@@ -6,21 +7,7 @@ from transformation.s3_client import S3TransformationClient
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# TRANSFORM_MAP = {
-#     # Dimensions
-#     "currency": "make_dim_currency",
-#     "staff": "make_dim_staff",
-#     "address": "make_dim_location",
-#     "counterparty": "make_dim_counterparty",
-#     "design": "make_dim_design",
-#     "payment_type": "make_dim_payment_type",
-#     "transaction": "make_dim_transaction",
-#     "dates": "make_dim_date",
-#     # Facts
-#     "sales_order": "make_fact_sales_order",
-#     "purchase_order": "make_fact_purchase_order",
-#     "payment": "make_fact_payment",
-# }
+
 
 TRANSFORM_MAP = {
     "payment": ["make_fact_payment", "make_dim_date"],
@@ -321,7 +308,7 @@ class TransformService:
             ]
         ]
     
-        fact.insert(0, "purchase_record_id", range(1, len(fact) + 1))
+        # fact.insert(0, "purchase_record_id", range(1, len(fact) + 1))
         return fact
     
 
@@ -339,52 +326,46 @@ class TransformService:
             "dim_currency": self.make_dim_currency(),
             "dim_counterparty": self.make_dim_counterparty(),
             "fact_sales_order": self.make_fact_sales_order(),
-            "fact_purchase_orders": self.make_fact_purchase_order(),
+            "fact_purchase_order": self.make_fact_purchase_order(),
             "fact_payment": self.make_fact_payment(),
         }
 
         logger.info(f"Generated {len(outputs)} tables: {list(outputs.keys())}")
 
         for name, df in outputs.items():
-            logger.info(f"Writing {name} ({len(df)} rows)")
-            if df is not None and len(df) > 0:
-                self.processed_s3.write_parquet(name, df)
-            else:
-                logger.warning(f"{name} is empty or None, skipping")
+            if df is None or len(df) == 0:
+                logger.warning("No data for %s - skipping parquet write", name)
+                continue
             self.processed_s3.write_parquet(name, df)
-        logger.info("Transformation run completed successfully")
-
-  
+            logger.info("Wrote parquet for %s rows=%d", name, len(df))
 
 
     # def run_single_table(self, table_name: str):
     #     logger.info(f"Running single-table transformation for '{table_name}'")
 
-    #     if table_name not in TRANSFORM_MAP:
+    #     methods = TRANSFORM_MAP.get(table_name)
+    #     if not methods:
     #         logger.warning(f"No transformation mapped for '{table_name}'")
-    #         return {
-    #             "table": table_name,
-    #             "status": "skipped",
-    #             "reason": "no_transform_defined"
-    #         }
+    #         return {"table": table_name, "status": "skipped", "reason": "no_transform_defined"}
 
-    #     transform_method_name = TRANSFORM_MAP[table_name]
-    #     transform_method = getattr(self, transform_method_name)
+    #     results = []
 
-    #     df = transform_method()
+    #     for method_name in methods:
+    #         transform_method = getattr(self, method_name)
+    #         df = transform_method()
 
-    #     logger.info(f"Writing transformed table '{transform_method_name}' ({len(df)} rows)")
-    #     s3_key = self.processed_s3.write_parquet(transform_method_name, df)
+    #         output_name = OUTPUT_NAME.get(method_name, method_name)
+    #         logger.info(f"Writing '{output_name}' from '{method_name}' ({len(df)} rows)")
+    #         s3_key = self.processed_s3.write_parquet(output_name, df)
 
-    #     return {
-    #         "table": table_name,
-    #         "output": transform_method_name,
-    #         "rows": len(df),
-    #         "s3_key": s3_key,
-    #         "status": "success",
-    #     }
+    #         results.append({
+    #             "method": method_name,
+    #             "output": output_name,
+    #             "rows": len(df),
+    #             "s3_key": s3_key,
+    #         })
 
-
+    #     return {"table": table_name, "status": "success", "results": results}
 
     def run_single_table(self, table_name: str):
         logger.info(f"Running single-table transformation for '{table_name}'")
@@ -394,21 +375,30 @@ class TransformService:
             logger.warning(f"No transformation mapped for '{table_name}'")
             return {"table": table_name, "status": "skipped", "reason": "no_transform_defined"}
 
+        unique_methods = list(dict.fromkeys(methods))  # de-dupe keep order
+        written_outputs = set()
         results = []
 
-        for method_name in methods:
+        for method_name in unique_methods:
             transform_method = getattr(self, method_name)
             df = transform_method()
 
             output_name = OUTPUT_NAME.get(method_name, method_name)
+
+            if df is None or len(df) == 0:
+                logger.warning("Empty df for %s (%s) - skipping", output_name, method_name)
+                results.append({"method": method_name, "output": output_name, "rows": 0, "status": "skipped_empty"})
+                continue
+
+            if output_name in written_outputs:
+                logger.info("Output %s already written in this run - skipping duplicate", output_name)
+                results.append({"method": method_name, "output": output_name, "rows": len(df), "status": "skipped_duplicate"})
+                continue
+
             logger.info(f"Writing '{output_name}' from '{method_name}' ({len(df)} rows)")
             s3_key = self.processed_s3.write_parquet(output_name, df)
+            written_outputs.add(output_name)
 
-            results.append({
-                "method": method_name,
-                "output": output_name,
-                "rows": len(df),
-                "s3_key": s3_key,
-            })
+            results.append({"method": method_name, "output": output_name, "rows": len(df), "s3_key": s3_key, "status": "written"})
 
         return {"table": table_name, "status": "success", "results": results}

@@ -46,7 +46,7 @@ class S3TransformationClient:
 
 
     def write_parquet(self, table_name: str, df: pd.DataFrame):
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
         run_id= uuid4().hex
         key = f"{table_name}/processed_{timestamp}_{run_id}.parquet"
         # key = f"{table_name}/latest.parquet"
