@@ -339,7 +339,7 @@ class TransformService:
             self.processed_s3.write_parquet(name, df)
             logger.info("Wrote parquet for %s rows=%d", name, len(df))
 
-
+    # removed duplicate writes in run_single_table
     # def run_single_table(self, table_name: str):
     #     logger.info(f"Running single-table transformation for '{table_name}'")
 
