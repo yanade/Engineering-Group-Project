@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from botocore.exceptions import ClientError
 
-from lambda_layer.python.moto.dynamodb.models import table
+import moto
 from loading.sql import CREATE_TABLE_SQL
 
 
