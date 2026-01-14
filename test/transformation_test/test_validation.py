@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from src.transformation.validation import (
+from transformation.validation import (
     validate_schema,
     validate_not_null,
     validate_row_count,
