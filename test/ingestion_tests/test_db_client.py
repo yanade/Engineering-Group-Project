@@ -1,6 +1,8 @@
 import os
 import pytest
 from unittest.mock import MagicMock
+
+from pytest_mock import mocker
 from ingestion.db_client import DatabaseClient
 
 
@@ -15,9 +17,10 @@ def test_db_client_initialises_correctly(mocker):
     }
     mocker.patch.dict(os.environ, mock_env)
 
-    # Mock the Connection object ***in the db_client module***
-    fake_connection = mocker.Mock()
-    mocker.patch("ingestion.db_client.Connection", return_value=fake_connection)
+    mocker.patch.dict(os.environ, mock_env, clear=True)
+
+    mock_conn_cls = mocker.patch("ingestion.db_client.Connection", autospec=True)
+    mock_conn_instance = mock_conn_cls.return_value
 
     client = DatabaseClient()
 
@@ -26,7 +29,15 @@ def test_db_client_initialises_correctly(mocker):
     assert client.user == "username"
     assert client.password == "password"
     assert client.port == 5432
-    assert client.conn == fake_connection
+    
+    mock_conn_cls.assert_called_once_with(
+        user="username",
+        host="localhost",
+        database="testdb",
+        password="password",
+        port=5432,
+    )
+    assert client.conn is mock_conn_instance
 
 
 def test_missing_env_variables_raises_error(mocker):

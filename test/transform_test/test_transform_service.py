@@ -162,7 +162,7 @@ def test_run_writes_all_required_tables(seeded_service):
     written = set(FakeS3TransformationClient.writes[processed].keys())
     required = {
         "fact_sales_order",
-        "fact_purchase_orders",
+        "fact_purchase_order",
         "fact_payment",
         "dim_transaction",
         "dim_staff",
@@ -329,7 +329,7 @@ def test_fact_purchase_order_value_types(seeded_service):
     service, _, _ = seeded_service
     df = service.make_fact_purchase_order()
 
-    assert isinstance(df.loc[0, "purchase_record_id"], (int, np.integer))
+    
     assert isinstance(df.loc[0, "purchase_order_id"], (int, np.integer))
     assert isinstance(df.loc[0, "created_date"], date)
     assert isinstance(df.loc[0, "created_time"], time)

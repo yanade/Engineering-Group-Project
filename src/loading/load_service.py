@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from botocore.exceptions import ClientError
 
+from lambda_layer.python.moto.dynamodb.models import table
 from loading.sql import CREATE_TABLE_SQL
 
 
@@ -106,7 +107,11 @@ class LoadService:
         latest_key = parquet_keys[-1]
 
         # 2) Check checkpoint (for facts: skip if same parquet already loaded)
-        ckpt = self._read_checkpoint(table)
+        # 2) Checkpoint (facts only)
+        ckpt: Dict[str, Any] = {}
+        if self._is_fact(table):
+            ckpt = self._read_checkpoint(table)
+
         if self._is_fact(table) and ckpt.get("last_loaded_key") == latest_key:
             logger.info("Skip fact table=%s (already loaded key=%s).", table, latest_key)
             return {"table": table, "status": "skipped", "reason": "already_loaded", "latest_key": latest_key}
